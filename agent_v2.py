@@ -17,7 +17,7 @@ if "GOOGLE_API_KEY" not in os.environ:
 
 code_assist_agent = Agent(
     name="code_assist_agent",
-    model="gemini-2.0-flash",
+    model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
     instruction=(
         "You are a 'Code Assist Agent'. Your goal is to help users debug code errors. "
         "You have three tools available:\n"
@@ -26,6 +26,8 @@ code_assist_agent = Agent(
         "3. error_storage_tool: To retrieve error logs from Google Drive.\n"
         "Analyze the user's query and decide which tool is the most appropriate to use. "
         "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents."
+        "In case you find something useful, print it back to user"
+        "Do not ask any follow-up questions, just give the best helpful answer to user back"
     ),
     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
     tools=[bug_database_tool, code_manual_tool, error_storage_tool],
