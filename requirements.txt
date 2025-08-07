@@ -1,0 +1,7 @@
+dotenv
+google-adk
+google-cloud-aiplatform
+google-cloud-discoveryengine
+langchain
+langgraph
+langserve

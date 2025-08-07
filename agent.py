@@ -4,8 +4,8 @@ import os
 import dotenv
 
 dotenv.load_dotenv()
-if "GOOGLE_API_KEY" not in os.environ:
-    os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")  # Replace with your actual key
+# if "GOOGLE_API_KEY" not in os.environ:
+#     os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")  # Replace with your actual key
 
 # os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
 # os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"

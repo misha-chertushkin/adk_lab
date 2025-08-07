@@ -1,8 +1,13 @@
 import asyncio
 
+import dotenv
+import os
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+import google.auth
+import vertexai
+
 
 # Use a relative import to get the agent from the same package
 from .agent_v2 import code_assist_agent
@@ -46,6 +51,9 @@ async def call_agent_async(query: str):
 
 def main():
     """Main entry point for running the agent from the command line."""
+    dotenv.load_dotenv()
+    application_default_credentials, _ = google.auth.default()
+    vertexai.init(project=os.getenv("GOOGLE_CLOUD_PROJECT"), location=os.getenv("GOOGLE_CLOUD_LOCATION"))
     initial_query = "I'm getting a 'NullPointerException' in the user authentication module. Can you help me with that?"
     asyncio.run(call_agent_async(initial_query))
 
