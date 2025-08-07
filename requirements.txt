@@ -1,3 +1,4 @@
+a2a-sdk
 dotenv
 google-adk
 google-cloud-aiplatform

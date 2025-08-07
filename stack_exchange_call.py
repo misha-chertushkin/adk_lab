@@ -1,37 +1,68 @@
+import asyncio
 import httpx
+from uuid import uuid4
+
+# Correct imports for the modern a2a-sdk
+from a2a.client import A2ACardResolver, A2AClient
+from a2a.types import (
+    MessageSendParams,
+    SendMessageRequest,
+    TextPart,
+)
 from google.adk.tools import FunctionTool
 
+# The URL of your new A2A-compliant agent
+STACKEXCHANGE_AGENT_URL = "http://localhost:8001/"
 
-async def call_stackexchange_agent(query: str) -> str:
-    """
-    Calls the external StackExchange agent to find solutions for a technical query.
-    """
-    agent_server_url = "http://localhost:8001/stackexchange/invoke"
-    
-    async with httpx.AsyncClient() as client:
-        try:
-            payload = {
-                "input": {
-                    "messages": [
-                        # THE FIX: Change "type": "user" to "type": "human"
-                        {"type": "human", "content": query}
-                    ]
-                }
-            }
-            
-            response = await client.post(agent_server_url, json=payload, timeout=45.0)
-            response.raise_for_status() 
-            
-            result = response.json()
-            final_message = result.get("output", {}).get("messages", [])[-1]
-            
-            if isinstance(final_message, dict):
-                 return f"Response from StackExchange Agent: {final_message.get('content', 'No content found.')}"
-            return "Received an unexpected response format from the StackExchange Agent."
 
-        except httpx.RequestError as e:
-            return f"Network error calling StackExchange Agent: {e}"
-        except Exception as e:
-            return f"An unexpected error occurred while calling the StackExchange Agent: {e}"
+async def call_stackexchange_a2a(query: str) -> str:
+    """
+    Discovers and invokes the StackExchange A2A agent using the modern A2A SDK.
+    """
+    try:
+        async with httpx.AsyncClient() as httpx_client:
+            # Step 1: Discover the agent using the A2ACardResolver
+            resolver = A2ACardResolver(httpx_client=httpx_client, base_url=STACKEXCHANGE_AGENT_URL)
+            agent_card = await resolver.get_agent_card()
+
+            # Step 2: Initialize the A2AClient with the resolved card
+            client = A2AClient(httpx_client=httpx_client, agent_card=agent_card)
+
+            # Step 3: Manually construct the request payload and object
+            request = SendMessageRequest(
+                id=str(uuid4()),
+                params=MessageSendParams(
+                    message={
+                        "role": "user",
+                        "parts": [TextPart(text=query)],
+                        "message_id": uuid4().hex,
+                    }
+                ),
+            )
+
+            # Step 4: Send the message. For a non-streaming agent, this returns
+            # a SendMessageSuccessResponse object which contains the final task.
+            response_object = await client.send_message(request)
+
+            # The actual task is in the 'result' field of the response object
+            final_task = response_object
+            # return "It happens because of heap"
+            # Step 5: Process the response artifacts from the final task object
+            if final_task and final_task.root and final_task.root.result and final_task.root.result.artifacts:
+                # The result is in the artifacts list, as defined in our executor
+                artifact_content = final_task.root.result.artifacts[0].parts[0].root.text
+                return f"Response from StackExchange A2A Agent: {artifact_content}"
+            else:
+                return f"StackExchange A2A Agent returned no result. Final status: {final_task.status if final_task else 'Unknown'}"
+
+    except Exception as e:
+        print('NOOOOOOO')
+        print(e)
         
-stackexchange_agent = FunctionTool(func=call_stackexchange_agent)
+        return f"An error occurred while communicating with the StackExchange A2A Agent: {e}"
+
+
+# The FunctionTool definition remains the same, it just wraps the updated function
+stackexchange_agent = FunctionTool(
+    func=call_stackexchange_a2a,
+)
