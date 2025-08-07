@@ -56,7 +56,7 @@ async def call_stackexchange_a2a(query: str) -> str:
                 return f"StackExchange A2A Agent returned no result. Final status: {final_task.status if final_task else 'Unknown'}"
 
     except Exception as e:
-        print('NOOOOOOO')
+        print('NOOOOOOO: StackExchange A2A Agent did not return a result. Possible cause:')
         print(e)
         
         return f"An error occurred while communicating with the StackExchange A2A Agent: {e}"

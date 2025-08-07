@@ -39,10 +39,6 @@ async def call_agent_async(query: str):
     session, runner = await setup_session_and_runner()
     events = runner.run_async(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
 
-    events = runner.run_async(
-        user_id=USER_ID, session_id=SESSION_ID, new_message=content
-    )
-
     async for event in events:
         if event.is_final_response():
             final_response = event.content.parts[0].text
