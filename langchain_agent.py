@@ -63,6 +63,28 @@ add_routes(
     path="/stackexchange",
 )
 
+@app.get("/", tags=["Agent Metadata"])
+async def get_agent_card():
+    """Returns the agent's 'business card' for service discovery."""
+    return {
+        "name": "StackExchangeAgent",
+        "description": "Agent specialized in searching Stack Exchange for programming and software error-related questions.",
+        "version": "1.0.0",
+        "url": "http://localhost:8001/stackexchange", # Base URL for skills
+        "capabilities": {
+            "streaming": True,
+            "invocation": True
+        },
+        "skills": [
+            {
+                "name": "invoke",
+                "description": "Takes a user query and returns a single, complete answer.",
+                "input_schema": {"type": "string", "content": "query"},
+                "output_schema": {"type": "string", "content": "answer"}
+            }
+        ]
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
