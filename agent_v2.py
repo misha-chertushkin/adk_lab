@@ -16,35 +16,16 @@ dotenv.load_dotenv()
 # --- 2. Tool Definitions ---
 # Here we define the custom tools for our Code Assist Agent.
 
-# code_assist_agent = Agent(
-#     name="code_assist_agent",
-#     model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
-#     instruction=(
-#         "You are a 'Code Assist Agent'. Your goal is to help users debug code errors. "
-#         "You have four tools available:\n"
-#         "1. bug_database_tool: To search a BigQuery database of known bugs.\n"
-#         "2. code_manual_tool: To search documentation using Vertex AI Search.\n"
-#         "3. error_storage_tool: To retrieve error logs from Google Drive.\n"
-#         "4. call_stackexchange_agent: To retrieve error logs from Stack Exchange.\n"
-#         "Analyze the user's query invoke all tools. "
-#         "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents."
-#         "In case you find something useful, print it back to user"
-#         "Do not ask any follow-up questions, just give the best helpful answer to user back."
-#         "Always try to call call_stackexchange_agent - it has a lot of useful information."
-#     ),
-#     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
-#     tools=[bug_database_tool, code_manual_tool, error_storage_tool, call_stackexchange_agent],
-    
-# )
-
-
 code_assist_agent = Agent(
     name="code_assist_agent",
     model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
     instruction=(
         "You are a 'Code Assist Agent'. Your goal is to help users debug code errors. "
-        "You have a tool available:\n"
-        "1. call_stackexchange_agent: To retrieve error logs from Stack Exchange.\n"
+        "You have four tools available:\n"
+        "1. bug_database_tool: To search a BigQuery database of known bugs.\n"
+        "2. code_manual_tool: To search documentation using Vertex AI Search.\n"
+        "3. error_storage_tool: To retrieve error logs from Google Drive.\n"
+        "4. call_stackexchange_agent: To retrieve error logs from Stack Exchange.\n"
         "Analyze the user's query invoke all tools. "
         "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents."
         "In case you find something useful, print it back to user"
@@ -52,6 +33,25 @@ code_assist_agent = Agent(
         "Always try to call call_stackexchange_agent - it has a lot of useful information."
     ),
     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
-    tools=[call_stackexchange_agent],
+    tools=[bug_database_tool, code_manual_tool, error_storage_tool, call_stackexchange_agent],
     
 )
+
+
+# code_assist_agent = Agent(
+#     name="code_assist_agent",
+#     model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
+#     instruction=(
+#         "You are a 'Code Assist Agent'. Your goal is to help users debug code errors. "
+#         "You have a tool available:\n"
+#         "1. call_stackexchange_agent: To retrieve error logs from Stack Exchange.\n"
+#         "Analyze the user's query invoke all tools. "
+#         "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents."
+#         "In case you find something useful, print it back to user"
+#         "Do not ask any follow-up questions, just give the best helpful answer to user back."
+#         "Always try to call call_stackexchange_agent - it has a lot of useful information."
+#     ),
+#     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
+#     tools=[call_stackexchange_agent],
+    
+# )
