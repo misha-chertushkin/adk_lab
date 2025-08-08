@@ -5,6 +5,32 @@ from google.adk.tools import FunctionTool
 import os
 from google.adk.tools import FunctionTool
 from google.cloud import discoveryengine_v1 as discoveryengine
+import dotenv
+
+from google.cloud import secretmanager
+def get_secret(project_id, secret_id):
+    # Make sure to replace 'your-gcp-project-id' with your actual project ID
+    version_id = "latest"
+
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+
+if os.getenv("BIGQUERY_DATASET", None) is None:
+    # we are deployed remotely:
+    GOOGLE_CLOUD_PROJECT = "chertushkin-genai-sa"
+    GOOGLE_CLOUD_LOCATION = get_secret(GOOGLE_CLOUD_PROJECT, "GOOGLE_CLOUD_LOCATION")
+    DATASTORE_ID = get_secret(GOOGLE_CLOUD_PROJECT, "DATASTORE_ID")
+else:
+    # we are deloyed locally, reading from .env
+    dotenv.load_dotenv()
+    GOOGLE_CLOUD_PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
+    GOOGLE_CLOUD_LOCATION = os.environ["GOOGLE_CLOUD_LOCATION"]
+    DATASTORE_ID = os.environ["DATASTORE_ID"]
+
 
 def search_code_manual(query: str) -> str:
     """
@@ -17,11 +43,15 @@ def search_code_manual(query: str) -> str:
     # Create a client
     client = discoveryengine.SearchServiceClient()
 
+    project=GOOGLE_CLOUD_PROJECT
+    location=GOOGLE_CLOUD_LOCATION
+    data_store=DATASTORE_ID
+
     # The full resource name of the search engine serving configuration
     serving_config = client.serving_config_path(
-        project=os.getenv("GOOGLE_CLOUD_PROJECT"),
-        location=os.getenv("GOOGLE_CLOUD_LOCATION"),
-        data_store=os.getenv("DATASTORE_ID"),
+        project=project,
+        location=location,
+        data_store=data_store,
         serving_config="default_config",
     )
 

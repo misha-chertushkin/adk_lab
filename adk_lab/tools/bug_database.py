@@ -50,22 +50,47 @@ from google.adk.tools import FunctionTool
 # --- Configuration ---
 # Make sure to set these to your actual project, dataset, and table names.
 import dotenv
-dotenv.load_dotenv()
-GOOGLE_CLOUD_PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
-BIGQUERY_DATASET = os.environ["BIGQUERY_DATASET"]
-BIGQUERY_TABLE = os.environ["BIGQUERY_TABLE"]
-BIGQUERY_LOCATION = os.environ["BIGQUERY_LOCATION"]
-EMBEDDING_MODEL = os.environ["EMBEDDING_MODEL"]
+from google.cloud import secretmanager
+import os
+
+from google.cloud import secretmanager
+def get_secret(project_id, secret_id):
+    # Make sure to replace 'your-gcp-project-id' with your actual project ID
+    version_id = "latest"
+
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+
+if os.getenv("BIGQUERY_DATASET", None) is None:
+    # we are deployed remotely:
+    GOOGLE_CLOUD_PROJECT = "chertushkin-genai-sa"
+    BIGQUERY_DATASET = get_secret(GOOGLE_CLOUD_PROJECT, "BIGQUERY_DATASET")
+    BIGQUERY_TABLE = get_secret(GOOGLE_CLOUD_PROJECT, "BIGQUERY_TABLE")
+    BIGQUERY_LOCATION = get_secret(GOOGLE_CLOUD_PROJECT,"BIGQUERY_LOCATION")
+    EMBEDDING_MODEL = get_secret(GOOGLE_CLOUD_PROJECT, "EMBEDDING_MODEL")
+else:
+    # we are deloyed locally, reading from .env
+    dotenv.load_dotenv()
+    GOOGLE_CLOUD_PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
+    BIGQUERY_DATASET = os.environ["BIGQUERY_DATASET"]
+    BIGQUERY_TABLE = os.environ["BIGQUERY_TABLE"]
+    BIGQUERY_LOCATION = os.environ["BIGQUERY_LOCATION"]
+    EMBEDDING_MODEL = os.environ["EMBEDDING_MODEL"]
 
 # Initialize clients once to reuse them.
 bq_client = bigquery.Client(project=GOOGLE_CLOUD_PROJECT)
 embedding_model = TextEmbeddingModel.from_pretrained(EMBEDDING_MODEL)
 
+
 def find_similar_bugs(bug_description: str) -> str:
     """
     Performs a semantic search in the BigQuery bug database to find bugs
     with descriptions similar to the user's query.
-    
+
     Args:
         bug_description: The description of the new bug to search for.
 
@@ -111,9 +136,9 @@ def find_similar_bugs(bug_description: str) -> str:
     print("TOOL: Executing BigQuery vector search...")
     try:
         query_job = bq_client.query(sql_query, job_config=job_config)
-        results = query_job.result() # Waits for the job to complete
+        results = query_job.result()  # Waits for the job to complete
     except Exception as e:
-        print('HERE', e)
+        print("HERE", e)
         return f"Error: BigQuery search failed. Details: {e}"
 
     # 4. Format the results into a clean string for the agent
@@ -125,12 +150,13 @@ def find_similar_bugs(bug_description: str) -> str:
         response_parts.append(
             f"{i+1}. Title: {row.title}\n"
             f"   Description: {row.description}\n"
-            f"   (Similarity Score/Distance: {row.distance:.4f})\n" # Lower distance is more similar
+            f"   (Similarity Score/Distance: {row.distance:.4f})\n"  # Lower distance is more similar
         )
 
     result = "\n".join(response_parts)
     # print(result)
     return result
+
 
 # 5. Wrap the function in a FunctionTool for the agent to use
 bug_database_tool = FunctionTool(func=find_similar_bugs)
