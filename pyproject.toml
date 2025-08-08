@@ -1,0 +1,30 @@
+# File: pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adk_lab"
+version = "0.2.0"
+description = "A multi-agent lab using the Google Agent Development Kit (ADK)."
+requires-python = ">=3.9"
+
+# ⬇️ TODO: Copy all the packages from your requirements.txt file here.
+# For example:
+# dependencies = [
+#     "google-generativeai",
+#     "google-cloud-aiplatform",
+#     "google-adk",
+#     "langchain",
+#     "fastapi"
+# ]
+dependencies = []
+
+
+[tool.setuptools.packages.find]
+# This tells setuptools to find the 'adk_lab' package in the project root.
+where = ["."]
+# This pattern includes the 'adk_lab' package and all its sub-packages
+# (like code_assistant, tools, etc.).
+include = ["adk_lab*"]

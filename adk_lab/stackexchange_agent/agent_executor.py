@@ -12,7 +12,7 @@ from a2a.types import (
 )
 from a2a.utils import new_task
 from a2a.utils.errors import ServerError
-from .agent import StackExchangeAgent
+from adk_lab.stackexchange_agent.agent import StackExchangeAgent
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

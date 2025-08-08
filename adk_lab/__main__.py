@@ -10,7 +10,7 @@ import vertexai
 
 
 # Use a relative import to get the agent from the same package
-from .agent_v2 import code_assist_agent
+from adk_lab.code_assistant.agent import root_agent
 
 APP_NAME = "code_assist_app"
 USER_ID = "user1234"
@@ -19,7 +19,7 @@ SESSION_ID = "1234"
 async def setup_session_and_runner():
     session_service = InMemorySessionService()
     session = await session_service.create_session(app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID)
-    runner = Runner(agent=code_assist_agent, app_name=APP_NAME, session_service=session_service)
+    runner = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service)
     return session, runner
 
 async def call_agent_async(query: str):
@@ -28,7 +28,7 @@ async def call_agent_async(query: str):
     """
     session_service = InMemorySessionService()
     runner = Runner(
-        agent=code_assist_agent,
+        agent=root_agent,
         app_name=APP_NAME,
         session_service=session_service,
     )

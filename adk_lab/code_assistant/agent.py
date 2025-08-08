@@ -3,11 +3,13 @@ import os
 from google.adk.agents import Agent
 import dotenv
 
-from .tools import bug_database_tool, code_manual_tool, error_storage_tool
-from .stack_exchange_call import stackexchange_agent
+from adk_lab.tools import bug_database_tool, code_manual_tool, error_storage_tool
+from adk_lab.stack_exchange_call import stackexchange_agent
+from adk_lab.github_call import github_agent
+
 dotenv.load_dotenv()
 
-code_assist_agent = Agent(
+root_agent = Agent(
     name="code_assist_agent",
     model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
     instruction=(
@@ -17,6 +19,7 @@ code_assist_agent = Agent(
         "2. code_manual_tool: To search documentation using Vertex AI Search.\n"
         "3. error_storage_tool: To retrieve error logs from Google Drive.\n"
         "4. stackexchange_agent: To retrieve error logs from Stack Exchange.\n"
+        "5. github_agent: To ask about pull reuquest, github repositories and issues.\n"
         "Analyze the user's query invoke all tools. "
         "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents."
         "In case you find something useful, print it back to user"
@@ -24,8 +27,7 @@ code_assist_agent = Agent(
         "Always try to call stackexchange_agent - it has a lot of useful information."
     ),
     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
-    tools=[bug_database_tool, code_manual_tool, error_storage_tool, stackexchange_agent],
-    
+    tools=[bug_database_tool, code_manual_tool, error_storage_tool, stackexchange_agent, github_agent],
 )
 
 
@@ -44,5 +46,5 @@ code_assist_agent = Agent(
 #     ),
 #     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
 #     tools=[call_stackexchange_agent],
-    
+
 # )
