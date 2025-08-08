@@ -48,7 +48,7 @@ class GithubAgentExecutor(AgentExecutor):
 
     def __init__(self):
         """This constructor is now lightweight and synchronous."""
-        self.agent: Agent | None = None  # The agent will be initialized asynchronously
+        self.agent: Agent | None = None
 
     @classmethod
     async def create(cls):
@@ -74,10 +74,7 @@ class GithubAgentExecutor(AgentExecutor):
         )
 
         logger.info("Executor: Initializing native Github Agent...")
-        # FIX 2: Await the get_tools() coroutine to get the actual list of tools.
         tools = await mcp_tools.get_tools()
-
-        # FIX 1: Use a valid Python identifier for the agent name (no spaces).
         executor.agent = Agent(
             name="Github_Agent",
             instruction=(
@@ -87,10 +84,34 @@ class GithubAgentExecutor(AgentExecutor):
                 "information you find."
             ),
             tools=tools,
+            model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
+            # The model parameter is implicitly handled by the ADK Agent,
+            # but you can specify it if needed.
         )
         return executor
 
+    def _run_agent_sync(self, runner: Runner, content: types.Content, user_id: str, session_id: str) -> str:
+        """
+        --- NEW HELPER METHOD ---
+        A synchronous helper to run the agent's blocking execution loop.
+        This function is designed to be run in a separate thread.
+        """
+        final_message = ""
+        logger.info("Executing synchronous agent run in a separate thread.")
+        for event in runner.run(new_message=content, user_id=user_id, session_id=session_id):
+            if event.is_final_response():
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if part.text:
+                           final_message += part.text
+        logger.info("Synchronous agent run finished.")
+        return final_message
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+        """
+        --- MODIFIED EXECUTE METHOD ---
+        This method now runs the agent with a timeout.
+        """
         if not self.agent:
             raise ServerError(error=InternalError("Agent not initialized."))
 
@@ -104,30 +125,41 @@ class GithubAgentExecutor(AgentExecutor):
 
         try:
             logger.info(f"Running Github Agent with query: '{query}'")
-            # The run method synchronously executes the full reasoning loop
-            # final_message = self.agent.(prompt=query)
 
             session_service = InMemorySessionService()
             app_name = "github_agent_app"
             session_id = "1234"
             user_id = "user1234"
-            session = await session_service.create_session(app_name=app_name, user_id=user_id, session_id=session_id)
+            await session_service.create_session(app_name=app_name, user_id=user_id, session_id=session_id)
             runner = Runner(agent=self.agent, app_name=app_name, session_service=session_service)
-
             content = types.Content(role="user", parts=[types.Part(text=query)])
-
-            # 4. Run the agent and process the stream of events
-            # The runner returns an async generator of events. We loop through them
-            # to find the final response from the agent.
-            print("\nAgent's response:")
-            final_message = ""
-            async for event in runner.run(agent=self.agent, message=content):
-              # Check if the event is the final response from the LLM
-              if event.is_final_response():
-                final_message += event.content
             
-            print(final_message)
-            # content = " ".join(part.text for part in final_message.parts if hasattr(part, 'text'))
+            final_message = ""
+            loop = asyncio.get_running_loop()
+            
+            try:
+                # Wrap the blocking call in run_in_executor and apply a timeout
+                logger.info("Starting agent execution with a 60-second timeout.")
+                final_message = await asyncio.wait_for(
+                    loop.run_in_executor(
+                        None,  # Use the default thread pool executor
+                        self._run_agent_sync,
+                        runner,
+                        content,
+                        user_id,
+                        session_id
+                    ),
+                    timeout=10.0  # <-- You can adjust this timeout value
+                )
+
+                if not final_message:
+                    final_message = "Agent finished but provided no response."
+                    logger.warning(final_message)
+
+            except asyncio.TimeoutError:
+                logger.error("Agent execution timed out after 60 seconds.")
+                final_message = "The agent took too long to respond to your request. Please try again with a more specific query."
+            
             content = final_message
             logger.info(f"Github Agent finished. Final content: '{content[:100]}...'")
 
@@ -172,7 +204,6 @@ def main(host: str, port: int):
         )
 
         try:
-            # Use the new async factory method to create the executor
             agent_executor = await GithubAgentExecutor.create()
             
             request_handler = DefaultRequestHandler(
@@ -191,10 +222,8 @@ def main(host: str, port: int):
         except Exception as e:
             logger.error(f"Failed to start server: {e}", exc_info=True)
 
-    # Run the async start_server function
     asyncio.run(start_server())
 
 
 if __name__ == '__main__':
     main()
-

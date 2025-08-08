@@ -115,9 +115,10 @@ async def main() -> None:
             'message': {
                 'role': 'user',
                 'parts': [
-                    {'kind': 'text', 'text': 'How do I fix a 422 Unprocessable Entity error in FastAPI?'}
+                    {'kind': 'text', 'text': 'What is c++?'}
                 ],
                 'message_id': uuid4().hex,
+                'timeout': 10,
             },
         }
         request = SendMessageRequest(
@@ -135,10 +136,11 @@ async def main() -> None:
                 'parts': [
                     {
                         'kind': 'text',
-                        'text': 'What is size of int 32 bit?',
+                        'text': 'is there any issue with langchain repository?',
                     }
                 ],
                 'message_id': uuid4().hex,
+                'timeout': 10,
             },
         }
         request = SendMessageRequest(
