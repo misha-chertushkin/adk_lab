@@ -46,44 +46,16 @@ import os
 from google.cloud import bigquery
 from vertexai.language_models import TextEmbeddingModel
 from google.adk.tools import FunctionTool
-
-# --- Configuration ---
-# Make sure to set these to your actual project, dataset, and table names.
-import dotenv
-from google.cloud import secretmanager
-import os
-
-from google.cloud import secretmanager
-def get_secret(project_id, secret_id):
-    # Make sure to replace 'your-gcp-project-id' with your actual project ID
-    version_id = "latest"
-
-    client = secretmanager.SecretManagerServiceClient()
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
-
-    response = client.access_secret_version(request={"name": name})
-    return response.payload.data.decode("UTF-8")
-
-
-if os.getenv("BIGQUERY_DATASET", None) is None:
-    # we are deployed remotely:
-    GOOGLE_CLOUD_PROJECT = "chertushkin-genai-sa"
-    BIGQUERY_DATASET = get_secret(GOOGLE_CLOUD_PROJECT, "BIGQUERY_DATASET")
-    BIGQUERY_TABLE = get_secret(GOOGLE_CLOUD_PROJECT, "BIGQUERY_TABLE")
-    BIGQUERY_LOCATION = get_secret(GOOGLE_CLOUD_PROJECT,"BIGQUERY_LOCATION")
-    EMBEDDING_MODEL = get_secret(GOOGLE_CLOUD_PROJECT, "EMBEDDING_MODEL")
-else:
-    # we are deloyed locally, reading from .env
-    dotenv.load_dotenv()
-    GOOGLE_CLOUD_PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
-    BIGQUERY_DATASET = os.environ["BIGQUERY_DATASET"]
-    BIGQUERY_TABLE = os.environ["BIGQUERY_TABLE"]
-    BIGQUERY_LOCATION = os.environ["BIGQUERY_LOCATION"]
-    EMBEDDING_MODEL = os.environ["EMBEDDING_MODEL"]
+from adk_lab.utils.proxy import (
+    PROJECT_ID,
+    BQ_DATASET,
+    BQ_TABLE,
+    EMBEDDING_MODEL_NAME,
+)
 
 # Initialize clients once to reuse them.
-bq_client = bigquery.Client(project=GOOGLE_CLOUD_PROJECT)
-embedding_model = TextEmbeddingModel.from_pretrained(EMBEDDING_MODEL)
+bq_client = bigquery.Client(project=PROJECT_ID)
+embedding_model = TextEmbeddingModel.from_pretrained(EMBEDDING_MODEL_NAME)
 
 
 def find_similar_bugs(bug_description: str) -> str:
@@ -118,7 +90,7 @@ def find_similar_bugs(bug_description: str) -> str:
       distance
     FROM
       VECTOR_SEARCH(
-        TABLE `{GOOGLE_CLOUD_PROJECT}.{BIGQUERY_DATASET}.{BIGQUERY_TABLE}`,
+        TABLE `{PROJECT_ID}.{BQ_DATASET}.{BQ_TABLE}`,
         'description_embedding',  -- The column containing the vectors
         (SELECT @query_embedding AS embedding),
         top_k => 3,

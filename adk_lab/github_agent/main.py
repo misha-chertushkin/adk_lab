@@ -33,23 +33,10 @@ from a2a.types import (
 from a2a.utils import new_task
 from a2a.utils.errors import ServerError
 
-from google.cloud import secretmanager
+from adk_lab.utils.proxy import GITHUB_TOKEN
 
 # Load environment variables
 load_dotenv()
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
-def get_secret(project_id, secret_id):
-    """Fetches a secret from Google Cloud Secret Manager."""
-    version_id = "latest"
-    client = secretmanager.SecretManagerServiceClient()
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
-    response = client.access_secret_version(request={"name": name})
-    return response.payload.data.decode("UTF-8")
 
 
 async def _get_agent_async() -> Agent:
@@ -58,20 +45,15 @@ async def _get_agent_async() -> Agent:
     Asynchronously creates and returns the native ADK Agent for GitHub.
     This consolidates the agent creation logic.
     """
-    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "chertushkin-genai-sa")
-    if not project_id:
-        raise ValueError("FATAL: GOOGLE_CLOUD_PROJECT environment variable not set.")
-
-    github_token = get_secret(project_id, "GITHUB_PERSONAL_ACCESS_TOKEN")
-    if not github_token:
+    if not GITHUB_TOKEN:
         raise ValueError("FATAL: GITHUB_PERSONAL_ACCESS_TOKEN secret not found.")
 
-    logger.info("Initializing MCPToolset for GitHub...")
+    print("Initializing MCPToolset for GitHub...")
     mcp_tools = MCPToolset(
         connection_params=StreamableHTTPConnectionParams(
             url="https://api.githubcopilot.com/mcp/",
             headers={
-                "Authorization": f"Bearer {github_token}",
+                "Authorization": f"Bearer {GITHUB_TOKEN}",
                 "Accept": "application/vnd.github.v3+json",
             },
         ),
@@ -85,7 +67,7 @@ async def _get_agent_async() -> Agent:
         ],
     )
 
-    logger.info("Initializing native Github Agent...")
+    print("Initializing native Github Agent...")
     tools = await mcp_tools.get_tools()
     agent = Agent(
         name="Github_Agent",
@@ -107,7 +89,7 @@ def get_agent_for_deployment() -> Agent:
     Synchronous wrapper to create and return the agent for deployment.
     This is intended to be called from a standard Python script.
     """
-    logger.info("Creating GitHub agent for deployment...")
+    print("Creating GitHub agent for deployment...")
     # asyncio.run() creates a new event loop to run our async creator function.
     return asyncio.run(_get_agent_async())
 
@@ -127,7 +109,7 @@ class GithubAgentExecutor(AgentExecutor):
     async def create(cls):
         """Asynchronously creates and initializes an instance of GithubAgentExecutor."""
         executor = cls()
-        logger.info("Executor: Initializing native Github Agent...")
+        print("Executor: Initializing native Github Agent...")
         # The creation logic is now in the helper function.
         executor.agent = await _get_agent_async()
         return executor
@@ -135,14 +117,14 @@ class GithubAgentExecutor(AgentExecutor):
     def _run_agent_sync(self, runner: Runner, content: types.Content, user_id: str, session_id: str) -> str:
         """A synchronous helper to run the agent's blocking execution loop."""
         final_message = ""
-        logger.info("Executing synchronous agent run in a separate thread.")
+        print("Executing synchronous agent run in a separate thread.")
         for event in runner.run(new_message=content, user_id=user_id, session_id=session_id):
             if event.is_final_response():
                 if event.content and event.content.parts:
                     for part in event.content.parts:
                         if part.text:
                             final_message += part.text
-        logger.info("Synchronous agent run finished.")
+        print("Synchronous agent run finished.")
         return final_message
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
@@ -159,7 +141,7 @@ class GithubAgentExecutor(AgentExecutor):
         updater = TaskUpdater(event_queue, task.id, task.context_id)
 
         try:
-            logger.info(f"Running Github Agent with query: '{query}'")
+            print(f"Running Github Agent with query: '{query}'")
             session_service = InMemorySessionService()
             app_name = "github_agent_app"
             session_id = "1234"
@@ -176,13 +158,13 @@ class GithubAgentExecutor(AgentExecutor):
                 if not final_message:
                     final_message = "Agent finished but provided no response."
             except asyncio.TimeoutError:
-                logger.error("Agent execution timed out.")
+                print("Agent execution timed out.")
                 final_message = "The agent took too long to respond. Please try a more specific query."
 
             await updater.add_artifact([Part(root=TextPart(text=final_message))], name="github_result")
             await updater.complete()
         except Exception as e:
-            logger.error(f"An error occurred during execution: {e}", exc_info=True)
+            print(f"An error occurred during execution: {e}", exc_info=True)
             raise ServerError(error=InternalError()) from e
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
@@ -196,7 +178,7 @@ def main(host: str, port: int):
     """Starts the Github Agent A2A server."""
 
     async def start_server():
-        logger.info("Defining Agent Card...")
+        print("Defining Agent Card...")
         agent_card = AgentCard(
             name="GithubAgent-A2A",
             description="An agent that uses MCP to interact with GitHub.",
@@ -220,13 +202,13 @@ def main(host: str, port: int):
             agent_executor = await GithubAgentExecutor.create()
             request_handler = DefaultRequestHandler(agent_executor=agent_executor, task_store=InMemoryTaskStore())
             server = A2AStarletteApplication(agent_card=agent_card, http_handler=request_handler)
-            logger.info(f"Starting Github Agent A2A server at http://{host}:{port}")
+            print(f"Starting Github Agent A2A server at http://{host}:{port}")
             config = uvicorn.Config(server.build(), host=host, port=port)
             server_instance = uvicorn.Server(config)
             await server_instance.serve()
 
         except Exception as e:
-            logger.error(f"Failed to start server: {e}", exc_info=True)
+            print(f"Failed to start server: {e}", exc_info=True)
 
     asyncio.run(start_server())
 

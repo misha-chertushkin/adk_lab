@@ -26,13 +26,6 @@ async def call_agent_async(query: str):
     """
     Sets up the runner, calls the agent with a query, and prints the interaction.
     """
-    session_service = InMemorySessionService()
-    runner = Runner(
-        agent=root_agent,
-        app_name=APP_NAME,
-        session_service=session_service,
-    )
-
     print(f"User Query: {query}\n")
 
     content = types.Content(role="user", parts=[types.Part(text=query)])
