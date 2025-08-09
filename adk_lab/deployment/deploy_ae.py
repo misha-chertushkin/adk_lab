@@ -10,7 +10,6 @@ import vertexai
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "chertushkin-genai-sa")
 LOCATION = "us-central1"
 STAGING_BUCKET_URI = "gs://deploy-staging-bucket"
-SERVICE_ACCOUNT = '841488258821-compute@developer.gserviceaccount.com'
 
 # --- Agent and Requirements Path ---
 # This assumes the script is run from the root of the `adk_lab` project directory.
@@ -22,8 +21,6 @@ sys.path.append(os.getcwd())
 
 try:
     from adk_lab.code_assistant.agent import root_agent as code_assistant_agent
-    # from adk_lab.github_agent.main import get_agent_for_deployment
-    # code_assistant_agent = get_agent_for_deployment()
 except ImportError as e:
     print(f"🚨 Error importing the agent: {e}")
     print(

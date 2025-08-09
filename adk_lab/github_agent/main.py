@@ -110,7 +110,7 @@ class GithubAgentExecutor(AgentExecutor):
         """Asynchronously creates and initializes an instance of GithubAgentExecutor."""
         executor = cls()
         print("Executor: Initializing native Github Agent...")
-        # The creation logic is now in the helper function.
+        # The creation logic is now synchronous.
         executor.agent = await _get_agent_async()
         return executor
 
