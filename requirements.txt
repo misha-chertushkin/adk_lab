@@ -3,7 +3,10 @@ dotenv
 google-adk
 google-cloud-aiplatform
 google-cloud-discoveryengine
+google-cloud-logging
 google-cloud-secret-manager
 langchain
 langgraph
 langserve
+langchain-core
+uvicorn

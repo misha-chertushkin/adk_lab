@@ -1,0 +1,6 @@
+a2a-sdk
+langchain
+langgraph
+langchain-core
+uvicorn
+google-cloud-logging
