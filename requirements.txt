@@ -6,7 +6,9 @@ google-cloud-discoveryengine
 google-cloud-logging
 google-cloud-secret-manager
 langchain
+langchain-community
+langchain-core
 langgraph
 langserve
-langchain-core
+stackapi
 uvicorn

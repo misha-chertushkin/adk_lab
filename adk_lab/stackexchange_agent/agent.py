@@ -6,6 +6,9 @@ from langchain_core.messages import AnyMessage, SystemMessage
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langchain_core.tools import tool
+from langchain_community.tools import StackExchangeTool
+from langchain_community.utilities import StackExchangeAPIWrapper
+
 import logging
 
 
@@ -30,6 +33,7 @@ class StackExchangeAgent:
 
     def __init__(self):
         self.graph = self._create_graph()
+        self.tool = StackExchangeTool(api_wrapper=StackExchangeAPIWrapper()) 
 
     def _create_graph(self):
         """Creates the LangGraph agent."""
@@ -48,7 +52,9 @@ class StackExchangeAgent:
                 return {"messages": [SystemMessage(content="Error: No input query was provided.")]}
 
             query = messages[-1].content
-            tool_result = search_stack_exchange.invoke({"query": query})
+            # tool_result = search_stack_exchange.invoke({"query": query})
+            logging.info(f"--- Searching StackExchange for: {query} ---")
+            tool_result = self.tool.invoke(query)
             return {"messages": [SystemMessage(content=tool_result)]}
 
         except Exception as e:
