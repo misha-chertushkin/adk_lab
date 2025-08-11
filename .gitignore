@@ -29,3 +29,7 @@ wheels/
 venv/
 env/
 .vscode/
+adk_lab/token.json
+adk_lab/service_account.json
+adk_lab/argolis_service_account.json
+adk_lab/credentials.json

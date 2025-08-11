@@ -3,7 +3,7 @@ import os
 from google.adk.agents import Agent
 import dotenv
 
-from adk_lab.tools import bug_database_tool, code_manual_tool, error_storage_tool
+from adk_lab.tools import bug_database_tool, code_manual_tool, error_storage_tool, gdrive_upload_tool
 from adk_lab.stack_exchange_call import stackexchange_agent
 from adk_lab.github_call import github_agent
 
@@ -11,7 +11,7 @@ dotenv.load_dotenv()
 
 root_agent = Agent(
     name="code_assist_agent",
-    model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
+    model=os.getenv("MAIN_MODEL", "gemini-2.5-pro"),
     instruction=(
         "You are a 'Code Assist Agent'. Your goal is to help users debug code errors. "
         "You have four tools available:\n"
@@ -20,31 +20,21 @@ root_agent = Agent(
         "3. error_storage_tool: To retrieve error logs from Google Drive.\n"
         "4. stackexchange_agent: To retrieve error logs from Stack Exchange.\n"
         "5. github_agent: To ask about pull reuquest, github repositories and issues.\n"
-        "Analyze the user's query invoke all tools. "
-        "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents."
-        "In case you find something useful, print it back to user"
-        "Do not ask any follow-up questions, just give the best helpful answer to user back."
-        "Always try to call stackexchange_agent - it has a lot of useful information."
+        "6. gdrive_upload_tool: To save an image of a bug or screenshot to Google Drive for documentation.\n\n"
+        "First, analyze the user's query. **If the user provides an image of the error, your first step should be to use the `gdrive_upload_tool` tool to save it.** "
+        "Then, invoke the other relevant tools to find a solution. "
+        "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents. "
+        "In case you find something useful, print it back to the user. "
+        "Do not ask any follow-up questions; just provide the best helpful answer. "
+        "Always try to call stackexchange_agent as it contains a lot of useful information."
     ),
     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
-    tools=[bug_database_tool, code_manual_tool, error_storage_tool, stackexchange_agent, github_agent],
+    tools=[
+        bug_database_tool,
+        code_manual_tool,
+        error_storage_tool,
+        stackexchange_agent,
+        github_agent,
+        gdrive_upload_tool,
+    ],
 )
-
-
-# code_assist_agent = Agent(
-#     name="code_assist_agent",
-#     model=os.getenv("MAIN_MODEL", "gemini-2.5-flash"),
-#     instruction=(
-#         "You are a 'Code Assist Agent'. Your goal is to help users debug code errors. "
-#         "You have a tool available:\n"
-#         "1. call_stackexchange_agent: To retrieve error logs from Stack Exchange.\n"
-#         "Analyze the user's query invoke all tools. "
-#         "If the tools don't provide a sufficient answer, you will later have the option to escalate to other agents."
-#         "In case you find something useful, print it back to user"
-#         "Do not ask any follow-up questions, just give the best helpful answer to user back."
-#         "Always try to call call_stackexchange_agent - it has a lot of useful information."
-#     ),
-#     description="An agent that helps developers fix bugs by searching databases, manuals, and storage.",
-#     tools=[call_stackexchange_agent],
-
-# )
