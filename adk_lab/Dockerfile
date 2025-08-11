@@ -20,5 +20,6 @@ COPY . /app/adk_lab
 EXPOSE 8080
 
 # 6. Define the command to run your application
-# This executes the main() function in your modified main.py
-CMD ["python", "-m", "adk_lab.stackexchange_agent.main"]
+# The ENTRYPOINT is fixed. The CMD provides a default module and can be overridden.
+ENTRYPOINT ["python", "-m"]
+CMD ["adk_lab.stackexchange_agent.main"]

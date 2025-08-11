@@ -2,7 +2,6 @@
 
 import os
 import click
-import logging
 import uvicorn
 import asyncio
 from dotenv import load_dotenv
@@ -172,17 +171,23 @@ class GithubAgentExecutor(AgentExecutor):
 
 
 @click.command()
-@click.option("--host", default="localhost", help="The host to run the server on.")
-@click.option("--port", default=8002, help="The port to run the server on.")
-def main(host: str, port: int):
-    """Starts the Github Agent A2A server."""
+def main():
+    """Starts the Github Agent A2A server, configured for Cloud Run."""
+
+    # For Cloud Run, the server must listen on 0.0.0.0 and use the port
+    # specified by the PORT environment variable.
+    host = "0.0.0.0"
+    port = int(os.environ.get("PORT", 8080))
 
     async def start_server():
         print("Defining Agent Card...")
+        # The agent's public URL is needed for its card so other agents can find it.
+        # In a real-world scenario, this might be dynamically discovered.
+        public_url = os.environ.get("AGENT_PUBLIC_URL", f"http://localhost:{port}/")
         agent_card = AgentCard(
             name="GithubAgent-A2A",
             description="An agent that uses MCP to interact with GitHub.",
-            url=f"http://{host}:{port}/",
+            url=public_url,
             version="1.0.0",
             default_input_modes=GithubAgentExecutor.SUPPORTED_CONTENT_TYPES,
             default_output_modes=GithubAgentExecutor.SUPPORTED_CONTENT_TYPES,
