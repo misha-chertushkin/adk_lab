@@ -43,7 +43,7 @@ def main():
     dotenv.load_dotenv()
     application_default_credentials, _ = google.auth.default()
     vertexai.init(project=os.getenv("GOOGLE_CLOUD_PROJECT"), location=os.getenv("GOOGLE_CLOUD_LOCATION"))
-    initial_query = "I'm getting a 'NullPointerException' in the user authentication module. Can you help me with that?"
+    initial_query = "Search Stack Exchange for'NullPointerException'"
     # initial_query = "In C++ what is the int size?"
     asyncio.run(call_agent_async(initial_query))
 

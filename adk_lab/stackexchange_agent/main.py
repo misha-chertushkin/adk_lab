@@ -21,7 +21,7 @@ def main():
     # Read port from environment variable, default to 8080 for local testing
     port = int(os.environ.get("PORT", 8080))
     # In a container, listen on all interfaces
-    public_url = os.environ.get('AGENT_PUBLIC_URL', f'http://localhost:{port}/')
+    public_url = os.environ.get("STACKEXCHANGE_AGENT_PUBLIC_URL", f"http://localhost:{port}/")
     
     logger.info(f"Using public URL for Agent Card: {public_url}")
 

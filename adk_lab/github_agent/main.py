@@ -183,7 +183,7 @@ def main():
         print("Defining Agent Card...")
         # The agent's public URL is needed for its card so other agents can find it.
         # In a real-world scenario, this might be dynamically discovered.
-        public_url = os.environ.get("AGENT_PUBLIC_URL", f"http://localhost:{port}/")
+        public_url = os.environ.get("GITHUB_AGENT_PUBLIC_URL", f"http://localhost:{port}/")
         agent_card = AgentCard(
             name="GithubAgent-A2A",
             description="An agent that uses MCP to interact with GitHub.",
@@ -207,7 +207,7 @@ def main():
             agent_executor = await GithubAgentExecutor.create()
             request_handler = DefaultRequestHandler(agent_executor=agent_executor, task_store=InMemoryTaskStore())
             server = A2AStarletteApplication(agent_card=agent_card, http_handler=request_handler)
-            print(f"Starting Github Agent A2A server at http://{host}:{port}")
+            print(f"Starting Github Agent A2A server at {public_url}")
             config = uvicorn.Config(server.build(), host=host, port=port)
             server_instance = uvicorn.Server(config)
             await server_instance.serve()

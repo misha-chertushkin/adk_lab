@@ -12,8 +12,8 @@ from a2a.types import (
 from google.adk.tools import FunctionTool
 
 # The URL of your new A2A-compliant agent
-STACKEXCHANGE_AGENT_URL = "http://localhost:8002/"
-
+# GITHUB_AGENT_URL = "https://github-agent-841488258821.us-central1.run.app/"
+GITHUB_AGENT_URL = "https://github-agent-wbkml5x37q-uc.a.run.app/"
 
 async def call_github_a2a(query: str) -> str:
     """
@@ -22,11 +22,11 @@ async def call_github_a2a(query: str) -> str:
     try:
         async with httpx.AsyncClient() as httpx_client:
             # Step 1: Discover the agent using the A2ACardResolver
-            resolver = A2ACardResolver(httpx_client=httpx_client, base_url=STACKEXCHANGE_AGENT_URL)
+            resolver = A2ACardResolver(httpx_client=httpx_client, base_url=GITHUB_AGENT_URL)
             agent_card = await resolver.get_agent_card()
 
             # Step 2: Initialize the A2AClient with the resolved card
-            client = A2AClient(httpx_client=httpx_client, agent_card=agent_card)
+            client = A2AClient(httpx_client=httpx_client, agent_card=agent_card, url=GITHUB_AGENT_URL)
 
             # Step 3: Manually construct the request payload and object
             request = SendMessageRequest(
