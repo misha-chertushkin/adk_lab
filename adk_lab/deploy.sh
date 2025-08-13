@@ -11,7 +11,8 @@ AGENT_TYPE=$1
 
 # --- Configuration: Please edit these variables ---
 export PROJECT_ID="chertushkin-genai-sa"           # Your Google Cloud project ID
-export REGION="us-central1"                       # The region for your services (e.g., us-central1)
+# export REGION="global"                       # The region for your services (e.g., us-central1)
+export REGION="us-central1"
 # SERVICE_NAME is now set dynamically based on AGENT_TYPE
 export REPO_NAME="adk-lab"                 # The name for your Artifact Registry repository
 
