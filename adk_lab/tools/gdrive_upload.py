@@ -10,6 +10,7 @@ from google.adk.tools import ToolContext, FunctionTool
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from google.oauth2.credentials import Credentials
 
 # --- Configuration ---
 SERVICE_ACCOUNT_FILE = os.getenv(
@@ -19,6 +20,26 @@ SHARED_DRIVE_NAME = os.getenv("SHARED_DRIVE_NAME", "adk_lab_shared")
 GDRIVE_FOLDER_NAME = os.getenv("GDRIVE_FOLDER_NAME", "adk_lab")
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
+AGENTSPACE_AUTH_ID = "adk-lab-three-ga"#os.getenv("AGENTSPACE_AUTH_ID")
+if not AGENTSPACE_AUTH_ID:
+    raise ValueError("AGENTSPACE_AUTH_ID environment variable not set.")
+
+import re
+def get_access_token(tool_context: ToolContext, auth_id: str) -> str | None:
+    """Retrieves the OAuth access token from the ToolContext state provided by Agentspace."""
+    # Pattern to find the token key, e.g., "temp:YOUR_AGENTSPACE_AUTH_ID" or "temp:YOUR_AGENTSPACE_AUTH_ID_0"
+    print('TOOL CONTEXT')
+    print(tool_context)
+    auth_id_pattern = re.compile(f"temp:{re.escape(auth_id)}(_\\d+)?")
+    state_dict = tool_context.state.to_dict()
+    print(state_dict)
+    for key, value in state_dict.items():
+        if auth_id_pattern.match(key) and isinstance(value, str):
+            print(f"Found access token in state key: {key}")
+            return value
+    print(f"Access token not found for AGENTSPACE_AUTH_ID='{auth_id}' in tool_context.state")
+    print(f"Available state keys: {list(state_dict.keys())}")
+    return None
 
 def upload_image_to_drive(tool_context: ToolContext) -> str:
     """Uploads an image from the user's prompt to a specific folder on Google Drive.
@@ -58,7 +79,14 @@ def upload_image_to_drive(tool_context: ToolContext) -> str:
     filename = str(uuid.uuid4()) + ".png"
     try:
         image = Image.open(io.BytesIO(image_bytes))
-        creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        # creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+        access_token = get_access_token(tool_context, AGENTSPACE_AUTH_ID) # Authorizations: in curl
+        if not access_token:
+            return (f"❌ Error: OAuth access token not found. "
+                    f"Ensure the agent is authorized in Agentspace with AUTH_ID='{AGENTSPACE_AUTH_ID}'. "
+                    "The user may need to click 'Authorize' in the Agentspace UI.")
+        creds = Credentials(token=access_token)
         service = build("drive", "v3", credentials=creds)
 
         drive_response = service.drives().list(q=f"name='{SHARED_DRIVE_NAME}'").execute()
