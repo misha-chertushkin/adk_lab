@@ -14,18 +14,25 @@ from google.adk.tools import FunctionTool
 # The URL of your new A2A-compliant agent
 # GITHUB_AGENT_URL = "https://github-agent-841488258821.us-central1.run.app/"
 GITHUB_AGENT_URL = "https://github-agent-wbkml5x37q-uc.a.run.app/"
+# GITHUB_AGENT_URL = "http://localhost:8080/" # Make sure this port matches your server
 
 async def call_github_a2a(query: str) -> str:
     """
     Discovers and invokes the Github A2A agent using the modern A2A SDK.
     """
     try:
-        async with httpx.AsyncClient() as httpx_client:
+        # <<< FIX START >>>
+        # Define a longer timeout for the HTTP client. 90 seconds should be plenty.
+        timeout = httpx.Timeout(90.0)
+        async with httpx.AsyncClient(timeout=timeout) as httpx_client:
+        # <<< FIX END >>>
+
             # Step 1: Discover the agent using the A2ACardResolver
             resolver = A2ACardResolver(httpx_client=httpx_client, base_url=GITHUB_AGENT_URL)
             agent_card = await resolver.get_agent_card()
 
             # Step 2: Initialize the A2AClient with the resolved card
+            # The A2AClient will inherit the timeout from the httpx_client it's given
             client = A2AClient(httpx_client=httpx_client, agent_card=agent_card, url=GITHUB_AGENT_URL)
 
             # Step 3: Manually construct the request payload and object
@@ -44,17 +51,17 @@ async def call_github_a2a(query: str) -> str:
             # a SendMessageSuccessResponse object which contains the final task.
             response_object = await client.send_message(request)
 
-            # The actual task is in the 'result' field of the response object
-            final_task = response_object
-            # return "It happens because of heap"
             # Step 5: Process the response artifacts from the final task object
-            if final_task and final_task.root and final_task.root.result and final_task.root.result.artifacts:
-                # The result is in the artifacts list, as defined in our executor
-                artifact_content = final_task.root.result.artifacts[0].parts[0].root.text
+            if response_object and response_object.root and response_object.root.result and response_object.root.result.artifacts:
+                artifact_content = response_object.root.result.artifacts[0].parts[0].root.text
                 return f"Response from Github A2A Agent: {artifact_content}"
             else:
-                return f"Github A2A Agent returned no result. Final status: {final_task.status if final_task else 'Unknown'}"
+                final_status = response_object.root.status if response_object and response_object.root else 'Unknown'
+                return f"Github A2A Agent returned no result. Final status: {final_status}"
 
+    except httpx.ReadTimeout:
+        # Catch the specific timeout error for a clearer message
+        return "Error: The request to the Github A2A Agent timed out. The agent is taking too long to respond."
     except Exception as e:
         print('NOOOOOOO: Github A2A Agent did not return a result. Possible cause:')
         print(e)
