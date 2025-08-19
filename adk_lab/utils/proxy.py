@@ -58,6 +58,9 @@ GOOGLE_CLOUD_PROJECT = _get_config_value("GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_P
 GOOGLE_CLOUD_LOCATION = _get_config_value("GOOGLE_CLOUD_LOCATION", "GOOGLE_CLOUD_LOCATION")
 DATASTORE_ID = _get_config_value("DATASTORE_ID", "DATASTORE_ID")
 
+# Remote URLS for Github and Stackexchange
+STACKEXCHANGE_AGENT_URL = "https://stackexchange-agent-841488258821.us-central1.run.app"
+
 application_default_credentials, _ = google.auth.default()
 vertexai.init(
     project=os.getenv("GOOGLE_CLOUD_PROJECT"),
