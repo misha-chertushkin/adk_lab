@@ -148,7 +148,6 @@ def main():
         print("Defining Agent Card...")
         # The agent's public URL is needed for its card so other agents can find it.
         # In a real-world scenario, this might be dynamically discovered.
-        public_url = os.environ.get("GITHUB_AGENT_PUBLIC_URL", f"http://localhost:{port}/")
         agent_card = AgentCard(
             name="GithubAgent-A2A",
             description="An agent that uses MCP to interact with GitHub.",
