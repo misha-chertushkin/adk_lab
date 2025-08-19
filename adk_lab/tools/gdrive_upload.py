@@ -17,9 +17,7 @@ from googleapiclient.http import MediaFileUpload
 from PIL import Image
 
 # --- Configuration ---
-SERVICE_ACCOUNT_FILE = os.getenv(
-    "SERVICE_ACCOUNT_FILE", "/home/chertushkin/adk-lab-real/adk_lab/adk_lab/service_account.json"
-)
+SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "~/adk-lab-real/adk_lab/adk_lab/service_account.json")
 # These are no longer needed as we are uploading to the root directory
 SHARED_DRIVE_NAME = os.getenv("SHARED_DRIVE_NAME", "adk_lab_shared")
 GDRIVE_FOLDER_NAME = os.getenv("GDRIVE_FOLDER_NAME", "adk_lab")
