@@ -1,19 +1,17 @@
 import asyncio
-import httpx
 from uuid import uuid4
+
+import httpx
 
 # Correct imports for the modern a2a-sdk
 from a2a.client import A2ACardResolver, A2AClient
-from a2a.types import (
-    MessageSendParams,
-    SendMessageRequest,
-    TextPart,
-)
+from a2a.types import MessageSendParams, SendMessageRequest, TextPart
 from google.adk.tools import FunctionTool
 
 # The URL of your new A2A-compliant agent
-STACKEXCHANGE_AGENT_URL = "http://localhost:8001/"
-STACKEXCHANGE_AGENT_URL = "https://stackexchange-agent-wbkml5x37q-uc.a.run.app/"
+# STACKEXCHANGE_AGENT_URL = "http://localhost:8001/"
+# STACKEXCHANGE_AGENT_URL = "https://stackexchange-agent-wbkml5x37q-uc.a.run.app/"
+from adk_lab.utils.proxy import STACKEXCHANGE_AGENT_URL
 
 
 async def call_stackexchange_a2a(query: str) -> str:
@@ -25,13 +23,8 @@ async def call_stackexchange_a2a(query: str) -> str:
             # Step 1: Discover the agent using the A2ACardResolver
             resolver = A2ACardResolver(httpx_client=httpx_client, base_url=STACKEXCHANGE_AGENT_URL)
             agent_card = await resolver.get_agent_card()
-            print("HERE1")
-            print(agent_card)
             # Step 2: Initialize the A2AClient with the resolved card
             client = A2AClient(httpx_client=httpx_client, agent_card=agent_card, url=STACKEXCHANGE_AGENT_URL)
-            print("HERE2")
-            print(client)
-
             # Step 3: Manually construct the request payload and object
             request = SendMessageRequest(
                 id=str(uuid4()),
@@ -46,11 +39,9 @@ async def call_stackexchange_a2a(query: str) -> str:
             # Step 4: Send the message. For a non-streaming agent, this returns
             # a SendMessageSuccessResponse object which contains the final task.
             response_object = await client.send_message(request)
-            print("HERE3")
-            print(client)
             # The actual task is in the 'result' field of the response object
             final_task = response_object
-            # return "It happens because of heap"
+
             # Step 5: Process the response artifacts from the final task object
             if final_task and final_task.root and final_task.root.result and final_task.root.result.artifacts:
                 # The result is in the artifacts list, as defined in our executor

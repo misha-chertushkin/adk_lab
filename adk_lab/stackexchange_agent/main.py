@@ -12,8 +12,8 @@ from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 # Make sure the imports point to your project structure
 from adk_lab.stackexchange_agent.agent import StackExchangeAgent
 from adk_lab.stackexchange_agent.agent_executor import StackExchangeExecutor
+from adk_lab.utils.proxy import STACKEXCHANGE_AGENT_URL, logger
 
-from adk_lab.utils.proxy import logger
 
 def main():
     """Starts the StackExchange Agent A2A server, configured for Cloud Run."""
@@ -21,7 +21,9 @@ def main():
     # Read port from environment variable, default to 8080 for local testing
     port = int(os.environ.get("PORT", 8080))
     # In a container, listen on all interfaces
-    public_url = os.environ.get("STACKEXCHANGE_AGENT_PUBLIC_URL", f"http://localhost:{port}/")
+    public_url = STACKEXCHANGE_AGENT_URL
+    # uncomment for local testing
+    # public_url = f"http://localhost:{port}/")
 
     logger.info(f"Using public URL for Agent Card: {public_url}")
 
