@@ -1,17 +1,8 @@
 from google.adk.tools import FunctionTool
-
-# In your tool definition file (e.g., tools/code_manual.py)
-
-import os
-from google.adk.tools import FunctionTool
 from google.cloud import discoveryengine_v1 as discoveryengine
-import dotenv
 
-from adk_lab.utils.proxy import (
-    GOOGLE_CLOUD_PROJECT,
-    GOOGLE_CLOUD_LOCATION,
-    DATASTORE_ID,
-)
+from adk_lab.utils.proxy import DATASTORE_ID, GOOGLE_CLOUD_LOCATION, GOOGLE_CLOUD_PROJECT
+
 
 def search_code_manual(query: str) -> str:
     """
@@ -24,9 +15,9 @@ def search_code_manual(query: str) -> str:
     # Create a client
     client = discoveryengine.SearchServiceClient()
 
-    project=GOOGLE_CLOUD_PROJECT
-    location=GOOGLE_CLOUD_LOCATION
-    data_store=DATASTORE_ID
+    project = GOOGLE_CLOUD_PROJECT
+    location = "global"  # we always use global in this lab for VAIS to simplify the flow, in real world use GOOGLE_CLOUD_LOCATION
+    data_store = DATASTORE_ID
 
     # The full resource name of the search engine serving configuration
     serving_config = client.serving_config_path(
@@ -64,8 +55,6 @@ def search_code_manual(query: str) -> str:
 
     if not response.results:
         return "No relevant documents were found in the code manual for your query."
-    print('HERE')
-    print(results_str)
     return results_str
 
 
