@@ -68,7 +68,7 @@ async def main() -> None:
             raise RuntimeError("Failed to fetch the public agent card. Cannot continue.") from e
 
         # --8<-- [start:send_message]
-        client = A2AClient(httpx_client=httpx_client, agent_card=final_agent_card_to_use)
+        client = A2AClient(httpx_client=httpx_client, agent_card=final_agent_card_to_use, url=base_url)
         logger.info("A2AClient initialized.")
 
         # ✨ FIX 2: Use a more specific query to test the agent's tools ✨
