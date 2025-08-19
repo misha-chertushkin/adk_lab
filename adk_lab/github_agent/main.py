@@ -142,7 +142,7 @@ def main():
     # In a container, listen on all interfaces
     public_url = GITHUB_AGENT_URL
     # uncomment for local testing
-    # public_url = f"http://localhost:{port}/")
+    # public_url = f"http://localhost:{port}/"
 
     async def start_server():
         print("Defining Agent Card...")
