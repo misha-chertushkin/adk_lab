@@ -25,7 +25,10 @@ async def main() -> None:
 
     # --8<-- [start:A2ACardResolver]
 
-    base_url = 'http://localhost:8001'
+    # remote testing
+    base_url = 'https://stackexchange-agent-841488258821.us-central1.run.app'
+    # uncomment for local testing
+    # base_url = 'http://localhost:8080'
 
     async with httpx.AsyncClient() as httpx_client:
         # Initialize A2ACardResolver
@@ -107,7 +110,7 @@ async def main() -> None:
 
         # --8<-- [start:send_message]
         client = A2AClient(
-            httpx_client=httpx_client, agent_card=final_agent_card_to_use
+            httpx_client=httpx_client, agent_card=final_agent_card_to_use, url=base_url
         )
         logger.info('A2AClient initialized.')
 
