@@ -25,7 +25,7 @@ SERVICE_ACCOUNT_FILE = os.getenv(
 # GDRIVE_FOLDER_NAME = os.getenv("GDRIVE_FOLDER_NAME", "adk_lab")
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
-AGENTSPACE_AUTH_ID = "adk-lab-three-ga"  # os.getenv("AGENTSPACE_AUTH_ID")
+AGENTSPACE_AUTH_ID = "adk-lab-three-ga-3"  # os.getenv("AGENTSPACE_AUTH_ID")
 if not AGENTSPACE_AUTH_ID:
     raise ValueError("AGENTSPACE_AUTH_ID environment variable not set.")
 
@@ -57,37 +57,14 @@ def upload_image_to_drive(tool_context: ToolContext) -> str:
         tool_context: The context object provided by the ADK framework. It contains
                       both the user's original prompt and the parameters from the LLM.
     """
-    # 1. Get the image bytes from the user's prompt via the tool_context
-    logging.info(tool_context)
-    logging.info(dir(tool_context))
-    logging.info(type(tool_context))
-    user_content = tool_context.user_content
-    image_bytes = None
-    logging.info("IN IMAGE 1")
-    # Loop through each Part in the 'parts' list
-    for part in user_content.parts:
-        # Check if the part has image data by looking for the 'inline_data'
-        # attribute and checking its 'mime_type'.
-        if part.inline_data and part.inline_data.mime_type.startswith("image/"):
-            # If it's an image, get its raw byte data
-            image_bytes = part.inline_data.data
-            # Exit the loop since we found the image
-            break
-    logging.info("IN IMAGE 2")
-    # Now, the 'image_bytes' variable holds the image data:
-    # b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR...'
-    if image_bytes:
-        logging.info("Successfully extracted image data!")
-    else:
-        logging.warning("No image found in the content.")
-        return "❌ Error: No image found in the prompt."
+    # 1. Define the file to be created and uploaded for testing purposes.
+    logging.info("Preparing to upload a test file as requested...")
+    filename = "test.txt"
+    file_bytes = b"123"
+    mime_type = "text/plain"
 
-    logging.info("IN IMAGE 3")
-    # 3. Perform the upload using the extracted data
-    filename = str(uuid.uuid4()) + ".png"
+    # 3. Perform the upload using the defined data
     try:
-        image = Image.open(io.BytesIO(image_bytes))
-
         access_token = get_access_token(tool_context, AGENTSPACE_AUTH_ID)
         if not access_token:
             return (
@@ -98,12 +75,14 @@ def upload_image_to_drive(tool_context: ToolContext) -> str:
         creds = Credentials(token=access_token)
         service = build("drive", "v3", credentials=creds)
 
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=True) as temp_file:
-            image.save(temp_file.name, "PNG")
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            # Write the test bytes to the temporary file
+            temp_file.write(file_bytes)
+            temp_file.flush()
 
             # By not specifying 'parents', the file is uploaded to the root "My Drive" folder.
             file_metadata = {"name": filename}
-            media = MediaFileUpload(temp_file.name, mimetype="image/png")
+            media = MediaFileUpload(temp_file.name, mimetype=mime_type)
 
             # The 'supportsAllDrives' flag is not needed when not interacting with Shared Drives.
             uploaded_file = service.files().create(body=file_metadata, media_body=media, fields="id, name").execute()
