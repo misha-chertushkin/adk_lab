@@ -6,35 +6,27 @@ import uuid
 
 import click
 import uvicorn
-
 # --- Manual A2A Server Imports ---
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
-from a2a.types import (
-    AgentCapabilities,
-    AgentCard,
-    AgentSkill,
-    InternalError,
-    InvalidParamsError,
-    Part,
-    TextPart,
-    UnsupportedOperationError,
-)
+from a2a.types import (AgentCapabilities, AgentCard, AgentSkill, InternalError,
+                       InvalidParamsError, Part, TextPart,
+                       UnsupportedOperationError)
 from a2a.utils import new_task
 from a2a.utils.errors import ServerError
 from dotenv import load_dotenv
-
 # --- Core ADK/MCP Imports ---
 from google.adk import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool import (MCPToolset,
+                                       StreamableHTTPConnectionParams)
 from google.genai import types
 
-from adk_lab.utils.proxy import GITHUB_TOKEN
+from adk_lab.utils.proxy import GITHUB_AGENT_URL, GITHUB_TOKEN
 
 # Load environment variables
 load_dotenv()
@@ -147,6 +139,10 @@ def main():
     # specified by the PORT environment variable.
     host = "0.0.0.0"
     port = int(os.environ.get("PORT", 8080))
+    # In a container, listen on all interfaces
+    public_url = GITHUB_AGENT_URL
+    # uncomment for local testing
+    # public_url = f"http://localhost:{port}/")
 
     async def start_server():
         print("Defining Agent Card...")

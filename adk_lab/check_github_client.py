@@ -6,15 +6,18 @@ from uuid import uuid4
 import httpx
 from a2a.client import A2ACardResolver, A2AClient
 from a2a.types import AgentCard, MessageSendParams, SendMessageRequest
-from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH, EXTENDED_AGENT_CARD_PATH
+from a2a.utils.constants import (AGENT_CARD_WELL_KNOWN_PATH,
+                                 EXTENDED_AGENT_CARD_PATH)
+
+from adk_lab.utils.proxy import logger, GITHUB_AGENT_URL
 
 
 async def main() -> None:
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
 
-    # NOTE: Ensure this port matches the port your server is running on (default is 8080)
-    base_url = "http://localhost:8080"
+    # remote testing
+    base_url = GITHUB_AGENT_URL
+    # uncomment for local testing
+    # base_url = 'http://localhost:8080'
 
     # ✨ FIX 1: Increase the HTTP client timeout ✨
     # The default is 5 seconds, which is too short for the agent.

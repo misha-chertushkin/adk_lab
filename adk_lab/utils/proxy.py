@@ -60,6 +60,7 @@ DATASTORE_ID = _get_config_value("DATASTORE_ID", "DATASTORE_ID")
 
 # Remote URLS for Github and Stackexchange
 STACKEXCHANGE_AGENT_URL = "https://stackexchange-agent-841488258821.us-central1.run.app"
+GITHUB_AGENT_URL = "https://github-agent-841488258821.us-central1.run.app/"
 
 application_default_credentials, _ = google.auth.default()
 vertexai.init(
