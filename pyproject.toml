@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "adk_lab"
 version = "0.2.0"
-description = "A multi-agent lab using the Google Agent Development Kit (ADK)."
+description = "A multi-agent lab using the Google Agent Development Kit (ADK) for L400"
 requires-python = ">=3.9"
 
 # ⬇️ TODO: Copy all the packages from your requirements.txt file here.
