@@ -19,12 +19,9 @@ async def call_github_a2a(query: str) -> str:
     Discovers and invokes the Github A2A agent using the modern A2A SDK.
     """
     try:
-        # <<< FIX START >>>
         # Define a longer timeout for the HTTP client. 90 seconds should be plenty.
         timeout = httpx.Timeout(90.0)
         async with httpx.AsyncClient(timeout=timeout) as httpx_client:
-            # <<< FIX END >>>
-
             # Step 1: Discover the agent using the A2ACardResolver
             resolver = A2ACardResolver(httpx_client=httpx_client, base_url=GITHUB_AGENT_URL)
             agent_card = await resolver.get_agent_card()
