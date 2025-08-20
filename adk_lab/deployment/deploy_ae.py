@@ -1,10 +1,10 @@
 # adk_lab/deployment/deploy_code_assistant.py
 
 import os
-from google.cloud import aiplatform
-from vertexai.preview import reasoning_engines
 import sys
+
 import vertexai
+from vertexai.preview import reasoning_engines
 
 # --- Configuration ---
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "chertushkin-genai-sa")
@@ -36,7 +36,8 @@ def read_requirements(path):
         print("Please create the file and add your agent's dependencies.")
         return []
     with open(path) as f:
-        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
 
 def deploy_agent():
     """
@@ -81,9 +82,9 @@ def deploy_agent():
     print(f"Agent Resource Name: {deployed_agent.resource_name}")
     print("You can now interact with your deployed agent using its resource name.")
 
+
 if __name__ == "__main__":
     if PROJECT_ID == "your-gcp-project-id" or STAGING_BUCKET_URI == "gs://your-gcs-bucket-for-staging":
         print("🚨 Configuration Error: Please update PROJECT_ID and STAGING_BUCKET_URI at the top of the script.")
     else:
         deploy_agent()
-
