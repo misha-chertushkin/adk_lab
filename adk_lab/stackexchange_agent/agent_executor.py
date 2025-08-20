@@ -1,17 +1,14 @@
 import logging
+
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.tasks import TaskUpdater
+
 # --- MODIFIED: Add UnsupportedOperationError to imports ---
-from a2a.types import (
-    InternalError,
-    InvalidParamsError,
-    Part,
-    TextPart,
-    UnsupportedOperationError,
-)
+from a2a.types import InternalError, InvalidParamsError, Part, TextPart, UnsupportedOperationError
 from a2a.utils import new_task
 from a2a.utils.errors import ServerError
+
 from adk_lab.stackexchange_agent.agent import StackExchangeAgent
 
 logging.basicConfig(level=logging.INFO)
@@ -37,19 +34,16 @@ class StackExchangeExecutor(AgentExecutor):
         try:
             result = self.agent.invoke(query, task.context_id)
             await updater.add_artifact(
-                [Part(root=TextPart(text=result['content']))],
-                name='stackexchange_result',
+                [Part(root=TextPart(text=result["content"]))],
+                name="stackexchange_result",
             )
             await updater.complete()
 
         except Exception as e:
-            logger.error(f'An error occurred during agent execution: {e}')
+            logger.error(f"An error occurred during agent execution: {e}")
             raise ServerError(error=InternalError()) from e
 
-    # --- THIS ENTIRE METHOD IS THE FIX ---
-    async def cancel(
-        self, context: RequestContext, event_queue: EventQueue
-    ) -> None:
+    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
         """Handles a request to cancel the task."""
         # Since this agent completes its task very quickly, cancellation is not supported.
         raise ServerError(error=UnsupportedOperationError())

@@ -1,24 +1,14 @@
 # file: stackexchange_agent/agent.py
 
+import logging
 from typing import Annotated, Any
-from typing_extensions import TypedDict
+
+from langchain_community.tools import StackExchangeTool
+from langchain_community.utilities import StackExchangeAPIWrapper
 from langchain_core.messages import AnyMessage, SystemMessage
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
-from langchain_core.tools import tool
-from langchain_community.tools import StackExchangeTool
-from langchain_community.utilities import StackExchangeAPIWrapper
-
-import logging
-
-
-# --- No changes to your tool definition ---
-@tool
-def search_stack_exchange(query: str) -> str:
-    """Searches StackExchange for the given query."""
-    print(f"--- Searching StackExchange for: {query} ---")
-    # This is a mock response for demonstration
-    return f"Found 3 results for '{query}'. The top answer suggests correcting the endpoint URL."
+from typing_extensions import TypedDict
 
 
 # --- No changes to your State definition ---
@@ -33,7 +23,7 @@ class StackExchangeAgent:
 
     def __init__(self):
         self.graph = self._create_graph()
-        self.tool = StackExchangeTool(api_wrapper=StackExchangeAPIWrapper()) 
+        self.tool = StackExchangeTool(api_wrapper=StackExchangeAPIWrapper())
 
     def _create_graph(self):
         """Creates the LangGraph agent."""

@@ -1,6 +1,5 @@
 # file: adk_lab/stackexchange_agent/main.py
 
-import logging
 import os
 
 import uvicorn
