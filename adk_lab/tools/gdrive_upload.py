@@ -17,13 +17,15 @@ from googleapiclient.http import MediaFileUpload
 from PIL import Image
 
 # --- Configuration ---
-SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "~/adk-lab-real/adk_lab/adk_lab/service_account.json")
+
 # These are no longer needed as we are uploading to the root directory
-SHARED_DRIVE_NAME = os.getenv("SHARED_DRIVE_NAME", "adk_lab_shared")
-GDRIVE_FOLDER_NAME = os.getenv("GDRIVE_FOLDER_NAME", "adk_lab")
+# This is for local testing with adk web
+# SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "~/adk-lab-real/adk_lab/adk_lab/service_account.json")
+# SHARED_DRIVE_NAME = os.getenv("SHARED_DRIVE_NAME", "adk_lab_shared")
+# GDRIVE_FOLDER_NAME = os.getenv("GDRIVE_FOLDER_NAME", "adk_lab")
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
-AGENTSPACE_AUTH_ID = "adk-lab-1"  # os.getenv("AGENTSPACE_AUTH_ID")
+AGENTSPACE_AUTH_ID = "adk-lab-1"
 if not AGENTSPACE_AUTH_ID:
     raise ValueError("AGENTSPACE_AUTH_ID environment variable not set.")
 
